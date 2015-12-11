@@ -54,24 +54,16 @@ main(int argc, char **argv)
 
     /* receive file name and file size */
     char fileName[100];
-    unsigned long long fileSize = -1;
     recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0){
         buf[recvlen] = 0;
         strncpy(fileName, buf, strlen(buf));
-        if(DEBUG) printf("File name is: %s\n", buf);
     }
     bzero(buf, BUFSIZE);    
-    recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
-    if (recvlen > 0){
-        buf[recvlen] = 0;
-        fileSize = (unsigned long long)atoi(buf);
-        if(DEBUG) printf("File size is: %llu\n", fileSize);
-    }    
 
-    /* check if fileName and fileSize have been set */
-    if(fileName == NULL || fileSize == -1){
-        perror("Did not receive file name or file size info");
+    /* check if fileName have been set */
+    if(fileName == NULL){
+        perror("Did not receive file name");
         return 0;
     }
 
@@ -79,30 +71,20 @@ main(int argc, char **argv)
     FILE *fp;
     fp = fopen(fileName, "wb");
     if(fp == NULL){
-        printf("Error opening file!\n");
+        perror("Error opening file!");
         exit(1);
-    }
-    int arrSize = fileSize / SIZE;
-    if(fileSize % SIZE != 0)
-        arrSize+=1;
-
-    /* allocating memory for temporary data storage */
-    char** stringList = (char**)malloc(arrSize * sizeof(char*));
-    for(int i = 0; i < arrSize; ++i){
-        stringList[i] = (char*)malloc(SIZE);
     }
 
 
 	/* now loop, receiving data and printing what we received */
 	while(1) {
-		printf("waiting on port %d\n", SERVICE_PORT);
 		recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
 		if (recvlen > 0) {
 			buf[recvlen] = 0;
 			printf("received message: \"%s\" (%d bytes)\n", buf, recvlen);
             int index = buf[strlen(buf)-1] - '0';
             buf[strlen(buf)-1] = 0;
-            printf("index: %d, %s\n", index, buf);
+            printf("what's write to file: %s\n", buf);
             //strncpy(stringList[buf[SIZE-1] - '0'], buf, SIZE)
             fwrite(buf, SIZE, 1, fp);
 		}
@@ -114,11 +96,8 @@ main(int argc, char **argv)
 		printf("sending response \"%s\"\n", buf);
 		if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen) < 0)
 			perror("sendto");
-        printf("printing stringlist\n");
-        for(int i = 0; i < arrSize; ++i){
-            printf("%s\n", stringList[i]);
-        }
     }
     fclose(fp);
+    close(fd);
 	/* never exits */
 }

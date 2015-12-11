@@ -64,22 +64,17 @@ int main(void)
         perror("fopen");
         exit(1);
     }
-    /* determine file size */
+
+/*
     fseek(fp, 0L, SEEK_END);
     unsigned long long fileSize  = ftell(fp);
     fseek(fp, 0L, SEEK_SET);
     if(DEBUG) printf("File size: %d\n", fileSize);
-
+*/
 	/* now let's send the messages */
 
     /* first send the file name */
     sprintf(buf, "in.txt");
-    if(sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
-        perror("sendto");
-        exit(1);
-    }
-    /* send file size */
-    sprintf(buf, "%llu", fileSize);
     if(sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
         perror("sendto");
         exit(1);
@@ -91,20 +86,15 @@ int main(void)
     // integer argument for reading length n-1
     while(1){
 	    fread(buf, SIZE, 1, fp);
+        //break when eof
         if(strlen(buf) == 0){
-            printf("size zero\n");
             break;
         }
-        if(DEBUG){
-//            printf("*****Before sprintf, buf contains: %s\n", buf);
-//		    printf("*****Sending packet %d to %s port %d\n", i, server, SERVICE_PORT);
-        }
-//		sprintf(buf, "%s%d", buf, i);
+
+
         /* append sequence number to end of message */
         buf[strlen(buf)] = i + '0';
 
-        if(DEBUG)
-            printf("*****After sprintf, buf contains: %s\n", buf);
 		
         if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
 			perror("sendto");
@@ -124,6 +114,7 @@ int main(void)
         i++;
 	
     }
+
     /* final empty packet so that the server knows the transmission is done */
     if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
 	    perror("sendto");
@@ -131,5 +122,6 @@ int main(void)
 	}
 
 	close(fd);
+    fclose(fp);
 	return 0;
 }
