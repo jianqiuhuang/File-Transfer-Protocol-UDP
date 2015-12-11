@@ -80,19 +80,19 @@ int main(void)
     }
 
     /* transmit file data */
-    i = 0;
+    i = 1;
     // integer argument for reading length n-1
     while(1){
         memset(buf, 0, BUFLEN);
         int nRead = fread(buf, 1, DATASIZE, fp);
         printf("number of bytes read: %d\n", nRead);
-        buf[nRead] = (char)i;
-        printf("transmitting number of bytes: %d\n", strlen(buf));
+        buf[nRead] = i;
+        printf("transmitting number of bytes: %d\n", nRead+1);
 //        printf("sending: %s\n", buf);
         //break when eof
         //transmit one last empty packet
 	    if(nRead <= 0){
-            if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
+            if (sendto(fd, buf, nRead+1, 0, (struct sockaddr *)&remaddr, slen)==-1) {
 	            perror("sendto");
 		        exit(1);
 	        }
