@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 #include "port.h"
 
-#define BUFSIZE 2048
+#define BUFSIZE 512
 #define DEBUG 1
 #define SIZE 5
 int
@@ -53,14 +53,15 @@ main(int argc, char **argv)
 	}
 
     /* receive file name and file size */
-    char *fileName = NULL;
+    char fileName[100];
     unsigned long long fileSize = -1;
     recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0){
         buf[recvlen] = 0;
-        fileName = buf;
+        strncpy(fileName, buf, strlen(buf));
         if(DEBUG) printf("File name is: %s\n", buf);
-    }    
+    }
+    bzero(buf, BUFSIZE);    
     recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0){
         buf[recvlen] = 0;
@@ -76,7 +77,7 @@ main(int argc, char **argv)
 
     /* create file stream and allocate temporary data storage array */
     FILE *fp;
-    fp = fopen(fileName, "w");
+    fp = fopen(fileName, "wb");
     if(fp == NULL){
         printf("Error opening file!\n");
         exit(1);
@@ -91,6 +92,7 @@ main(int argc, char **argv)
         stringList[i] = (char*)malloc(SIZE);
     }
 
+
 	/* now loop, receiving data and printing what we received */
 	while(1) {
 		printf("waiting on port %d\n", SERVICE_PORT);
@@ -102,9 +104,12 @@ main(int argc, char **argv)
             buf[strlen(buf)-1] = 0;
             printf("index: %d, %s\n", index, buf);
             //strncpy(stringList[buf[SIZE-1] - '0'], buf, SIZE)
+            fwrite(buf, SIZE, 1, fp);
 		}
-		else
-			printf("uh oh - something went wrong!\n");
+		else{
+			//printf("uh oh - something went wrong!\n");
+            break;
+        }
 		sprintf(buf, "ack %d", msgcnt++);
 		printf("sending response \"%s\"\n", buf);
 		if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, addrlen) < 0)

@@ -24,7 +24,7 @@ int main(void)
 {
 	struct sockaddr_in myaddr, remaddr;
 	int fd, i, slen=sizeof(remaddr);
-	unsigned char buf[BUFLEN];	/* message buffer */
+	char buf[BUFLEN];	/* message buffer */
 	int recvlen;		/* # bytes in acknowledgement message */
 	char *server = "127.0.0.1";	/* change this to use a different server */
 
@@ -59,7 +59,7 @@ int main(void)
 
     /* open the file */
     FILE *fp;
-    fp = fopen("in.txt", "rb");
+    fp = fopen("tmp/in.txt", "rb");
     if(fp == NULL){
         perror("fopen");
         exit(1);
