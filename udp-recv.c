@@ -17,7 +17,7 @@
 
 #define BUFSIZE 512
 #define DEBUG 1
-#define SIZE 5
+#define DATASIZE 508
 int
 main(int argc, char **argv)
 {
@@ -80,16 +80,14 @@ main(int argc, char **argv)
 	while(1) {
 		recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
 		if (recvlen > 0) {
-			buf[recvlen] = 0;
+			buf[strlen(buf)] = 0;
 			printf("received message: \"%s\" (%d bytes)\n", buf, recvlen);
             int index = buf[strlen(buf)-1] - '0';
             buf[strlen(buf)-1] = 0;
-            printf("what's write to file: %s\n", buf);
-            //strncpy(stringList[buf[SIZE-1] - '0'], buf, SIZE)
-            fwrite(buf, SIZE, 1, fp);
+            printf("writing: %s\n", buf);
+            fwrite(buf, DATASIZE, 1, fp);
 		}
 		else{
-			//printf("uh oh - something went wrong!\n");
             break;
         }
 		sprintf(buf, "ack %d", msgcnt++);

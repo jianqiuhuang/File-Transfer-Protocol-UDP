@@ -17,9 +17,8 @@
 #include "port.h"
 
 #define BUFLEN 512
-#define MSGS 5	/* number of messages to send */
 #define DEBUG 1
-#define SIZE 5
+#define DATASIZE 508
 int main(void)
 {
 	struct sockaddr_in myaddr, remaddr;
@@ -85,7 +84,7 @@ int main(void)
     bzero(buf, BUFLEN);
     // integer argument for reading length n-1
     while(1){
-	    fread(buf, SIZE, 1, fp);
+	    fread(buf, DATASIZE, 1, fp);
         //break when eof
         if(strlen(buf) == 0){
             break;
