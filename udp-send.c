@@ -19,7 +19,7 @@
 #define BUFLEN 512
 #define MSGS 5	/* number of messages to send */
 #define DEBUG 1
-#define SIZE 5
+#define SIZE 508
 int main(void)
 {
 	struct sockaddr_in myaddr, remaddr;
@@ -27,6 +27,7 @@ int main(void)
 	char buf[BUFLEN];	/* message buffer */
 	int recvlen;		/* # bytes in acknowledgement message */
 	char *server = "127.0.0.1";	/* change this to use a different server */
+	uint32_t current_seq_num = 1;
 
 	/* create a socket */
 
@@ -87,6 +88,9 @@ int main(void)
     while(1){
 	    fread(buf, SIZE, 1, fp);
         //break when eof
+	fread(buf, SIZE, 1, fp);
+	uint32_t seq_to_insert = current_seq_num;
+	buf[508] = seq_to_insert;
         if(strlen(buf) == 0){
             break;
         }
