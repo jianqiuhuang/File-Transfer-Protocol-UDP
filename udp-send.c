@@ -18,12 +18,12 @@
 
 #define BUFLEN 512
 #define DEBUG 1
-#define DATASIZE 508
+#define DATASIZE 511
 int main(void)
 {
 	struct sockaddr_in myaddr, remaddr;
 	int fd, i, slen=sizeof(remaddr);
-	char buf[BUFLEN];	/* message buffer */
+	char buf[BUFLEN], ackBuf[BUFLEN];	/* message buffer */
 	int recvlen;		/* # bytes in acknowledgement message */
 	char *server = "127.0.0.1";	/* change this to use a different server */
 
@@ -81,44 +81,44 @@ int main(void)
 
     /* transmit file data */
     i = 0;
-    bzero(buf, BUFLEN);
     // integer argument for reading length n-1
     while(1){
-	    fread(buf, DATASIZE, 1, fp);
+        memset(buf, 0, BUFLEN);
+        int nRead = fread(buf, 1, DATASIZE, fp);
+        printf("number of bytes read: %d\n", nRead);
+        buf[nRead] = (char)i;
+        printf("transmitting number of bytes: %d\n", strlen(buf));
+//        printf("sending: %s\n", buf);
         //break when eof
-        if(strlen(buf) == 0){
+        //transmit one last empty packet
+	    if(nRead <= 0){
+            if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
+	            perror("sendto");
+		        exit(1);
+	        }
             break;
         }
 
-
         /* append sequence number to end of message */
-        buf[strlen(buf)] = i + '0';
-
-		
+//        buf[strlen(buf)] = i + '0';
+	
         if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
 			perror("sendto");
 			exit(1);
 		}
         
-        bzero(buf, BUFLEN);
         
-        /* now receive an acknowledgement from the server */
-		recvlen = recvfrom(fd, buf, BUFLEN, 0, (struct sockaddr *)&remaddr, &slen);
+        /* now receive an acknowledgemen from the server */
+		recvlen = recvfrom(fd, ackBuf, BUFLEN, 0, (struct sockaddr *)&remaddr, &slen);
                 if (recvlen >= 0) {
-                        buf[recvlen] = 0;	/* expect a printable string - terminate it */
-                        printf("received message: \"%s\"\n", buf);
+                        ackBuf[recvlen] = 0;	/* expect a printable string - terminate it */
+                        printf("received message: \"%s\"\n", ackBuf);
                 }
         
-        bzero(buf, BUFLEN);
+        memset(ackBuf, 0, BUFLEN);
         i++;
 	
     }
-
-    /* final empty packet so that the server knows the transmission is done */
-    if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
-	    perror("sendto");
-		exit(1);
-	}
 
 	close(fd);
     fclose(fp);

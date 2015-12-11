@@ -1,19 +1,35 @@
-omputer science is the scientific and practical approach to computation and its applications. It is the systematic study of the feasibility, structure, expression, and mechanization of the methodical procedures (or algorithms) that underlie the acquisition, representation, processing, storage, communication of, and access to information. An alternate, more succinct definition of computer science is the study of automating algorithmic processes that scale. A computer scientist specializes in the theory of computation and the design of computational systems.[1]
+Characteristics
 
-Its fields can be divided into a variety of theoretical and practical disciplines. Some fields, such as computational complexity theory (which explores the fundamental properties of computational and intractable problems), are highly abstract, while fields such as computer graphics emphasize real-world visual applications. Still other fields focus on challenges in implementing computation. For example, programming language theory considers various approaches to the description of computation, while the study of computer programming itself investigates various aspects of the use of programming language and complex systems. Human–computer interaction considers the challenges in making computers and computations useful, usable, and universally accessible to humans.
-Contents
+Images may be two-dimensional, such as a photograph, screen display, and as well as a three-dimensional, such as a statue or hologram. They may be captured by optical devices – such as cameras, mirrors, lenses, telescopes, microscopes, etc. and natural objects and phenomena, such as the human eye or water.
 
-    1 History
-        1.1 Contributions
-    2 Philosophy
-        2.1 Name of the field
-    3 Areas of computer science
-        3.1 Theoretical computer science
-            3.1.1 Theory of computation
-            3.1.2 Information and coding theory
-            3.1.3 Algorithms and data structures
-            3.1.4 Programming language theory
-            3.1.5 Formal methods
-        3.2 Applied computer science
-            3.2.1 Artificial intelligence
-            3.2.2 Computer architecture and engineering
+The word image is also used in the broader sense of any two-dimensional figure such as a map, a graph, a pie chart, or a painting. In this wider sense, images can also be rendered manually, such as by drawing, the art of painting, carving, rendered automatically by printing or computer graphics technology, or developed by a combination of methods, especially in a pseudo-photograph.
+
+A volatile image is one that exists only for a short period of time. This may be a reflection of an object by a mirror, a projection of a camera obscura, or a scene displayed on a cathode ray tube. A fixed image, also called a hard copy, is one that has been recorded on a material object, such as paper or textile by photography or any other digital process.
+
+A mental image exists in an individual's mind, as something one remembers or imagines. The subject of an image need not be real; it may be an abstract concept, such as a graph, function, or "imaginary" entity. For example, Sigmund Freud claimed to have dreamed purely in aural-images of dialogs. The development of synthetic acoustic technologies and the creation of sound art have led to a consideration of the possibilities of a sound-image made up of irreducible phonic substance beyond linguistic or musicological analysis.
+
+A still image is a single static image, as distinguished from a kinetic image (see below). This phrase is used in photography, visual media and the computer industry to emphasize that one is not talking about movies, or in very precise or pedantic technical writing such as a standard.
+
+A film still is a photograph taken on the set of a movie or television program during production, used for promotional purposes.
+Imagery (literary term)
+
+Imagery is in literature a "mental picture" which appeals to the senses.[1][example needed] It can both be figurative and literal.[1]
+Moving image
+
+A moving image is typically a movie (film) or video, including digital video. It could also be an animated display such as a zoetrope .
+See also
+
+    Aniconism
+    Animation
+    Avatar (computing)
+    Cinematography
+    Computer animation
+    Computer-generated imagery
+    Digital image
+    Digital imaging
+    Film
+    Fine art photography
+    Graphics
+    Imagery
+    Painting
+    Photograph
