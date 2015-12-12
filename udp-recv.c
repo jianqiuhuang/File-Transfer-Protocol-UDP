@@ -155,7 +155,7 @@ main(int argc, char **argv)
         
                 /* sending ack to sender */    
                 memset(ackBuf, 0, BUFSIZE);
-	    	    sprintf(ackBuf, "ack %d", seqNum);
+	    	    sprintf(ackBuf, "%d", seqNum);
 	    	    printf("sending response \"%s\"\n", ackBuf);
     		    if (sendto(fd, ackBuf, strlen(ackBuf), 0, (struct sockaddr *)&remaddr, addrlen) < 0)
 		    	    perror("sendto");

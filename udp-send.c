@@ -14,12 +14,24 @@
 #include <string.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <time.h>
 #include "port.h"
 
 #define BUFLEN 512
 #define DEBUG 1
 #define DATASIZE 508
 #define SEQNUMSIZE 4
+#define WINDOWSIZE 4
+#define WAITLIMIT 2
+
+struct sentFrame{
+	uint32_t seqNum;
+	int resend;
+	int armed;
+	//Timing object here
+	time_t timing;
+};
+
 int main(void)
 {
 	struct sockaddr_in myaddr, remaddr;
@@ -27,7 +39,14 @@ int main(void)
 	char buf[BUFLEN], ackBuf[BUFLEN];	/* message buffer */
 	int recvlen;		/* # bytes in acknowledgement message */
 	char *server = "127.0.0.1";	/* change this to use a different server */
-
+	
+	//initialize the window structure
+	struct sentFrame window[WINDOWSIZE];
+	for(int j = 0; j < WINDOWSIZE; j++){
+		window[j].seqNum = -1;
+		window[j].resend = 0;
+		window[j].armed = 0;
+	}
 	/* create a socket */
 
 	if ((fd=socket(AF_INET, SOCK_DGRAM, 0))==-1)
@@ -57,77 +76,145 @@ int main(void)
 		exit(1);
 	}
 
-    /* open the file */
-    FILE *fp;
-    fp = fopen("tmp/in.txt", "rb");
-    if(fp == NULL){
-        perror("fopen");
-        exit(1);
-    }
+	/* open the file */
+	FILE *fp;
+	fp = fopen("tmp/in.txt", "rb");
+	if(fp == NULL){
+		perror("fopen");
+		exit(1);
+	}
 
-/*
-    fseek(fp, 0L, SEEK_END);
-    unsigned long long fileSize  = ftell(fp);
-    fseek(fp, 0L, SEEK_SET);
-    if(DEBUG) printf("File size: %d\n", fileSize);
-*/
+	/*
+	   fseek(fp, 0L, SEEK_END);
+	   unsigned long long fileSize  = ftell(fp);
+	   fseek(fp, 0L, SEEK_SET);
+	   if(DEBUG) printf("File size: %d\n", fileSize);
+	   */
 	/* now let's send the messages */
 
-    /* first send the file name */
-    sprintf(buf, "in.txt");
-    if(sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
-        perror("sendto");
-        exit(1);
-    }
+	/* first send the file name */
+	sprintf(buf, "in.txt");
+	if(sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
+		perror("sendto");
+		exit(1);
+	}
 
-    printf("fileName: %s\n", buf);
-    /* transmit file data */
-    unsigned int i = 1;
-    // integer argument for reading length n-1
-    while(1){
-        memset(buf, 0, BUFLEN);
-        int nRead = fread(buf, 1, DATASIZE, fp);
-        printf("number of bytes read: %d\n", nRead);
-        
-        uint32_t networkByteI = htonl(i);
+	int finished = 0;
+	int remainingPackets = 0;
 
-        //append 4 byte seqNum to the end of buf
-        memcpy(buf+nRead, &networkByteI, SEQNUMSIZE);
-        
-        printf("transmitting number of bytes: %d\n", nRead+SEQNUMSIZE);
-//        printf("sending: %s\n", buf);
-        //break when eof
-        //transmit one last empty packet
-	    if(nRead <= 0){
-            if (sendto(fd, buf, nRead+SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, slen)==-1) {
-	            perror("sendto");
-		        exit(1);
-	        }
-            break;
-        }
+	printf("fileName: %s\n", buf);
+	/* transmit file data */
+	unsigned int i = 1;
+	// integer argument for reading length n-1
 
-        /* append sequence number to end of message */
-//        buf[strlen(buf)] = i + '0';
-	
-        if (sendto(fd, buf, nRead+SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, slen)==-1) {
-			perror("sendto");
-			exit(1);
+	while(1){
+		memset(buf, 0, BUFLEN);
+		for(int j = 0; j < WINDOWSIZE; j++){
+			//check if any frames are marked for resend
+			if(window[j].armed == 1 && window[j].resend == 1){
+				uint32_t numToResend = window[j].seqNum;
+				printf("ACK not received in time for %d, resending\n", numToResend);
+				
+				fseek(fp, (numToResend - 1)*DATASIZE, SEEK_SET);
+				int nRead = fread(buf, 1, DATASIZE, fp);
+				printf("number of byes read %d\n", nRead);
+				
+				uint32_t networkByteI = htonl(i);
+				//append 4 byte seqNum to the end of buf
+				memcpy(buf+nRead, &networkByteI, SEQNUMSIZE);
+
+				if (sendto(fd, buf, nRead+SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, slen)==-1) {
+						perror("sendto");
+						exit(1);
+				}	
+
+				//Arm the timer
+				window[j].timing = time(NULL);
+				window[j].resend = 0;
+			}	
 		}
-        
-        
-        /* now receive an acknowledgemen from the server */
+		
+		memset(buf, 0, BUFLEN);
+		for(int j = 0; j < WINDOWSIZE; j++){
+			if(window[j].armed == 0){
+				fseek(fp, (i - 1)*DATASIZE, SEEK_SET);
+				int nRead = fread(buf, 1, DATASIZE, fp);
+				if(nRead == 0){
+					printf("Sending final packet\n");
+					finished = 1;
+					window[j].armed = 0;
+				}
+				else{
+					window[j].seqNum = i;
+					window[j].resend = 0;
+					window[j].armed = 1;
+					window[j].timing = time(NULL);
+				}
+				printf("number of bytes read: %d\n", nRead);
+				
+				uint32_t networkByteI = htonl(i);
+
+				//append 4 byte seqNum to the end of buf
+				memcpy(buf+nRead, &networkByteI, SEQNUMSIZE);
+
+				printf("transmitting number of bytes: %d\n", nRead + SEQNUMSIZE);
+				//break when eof
+				//transmit one last empty packet
+
+				if((sendto(fd, buf, nRead+SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, slen)==-1)) {
+					perror("sendto");
+					exit(1);
+				}	
+				
+				break;
+			}
+		}
+
+		for(int j = 0; j < WINDOWSIZE; j++){
+			if(window[j].armed == 1){
+				if(difftime(time(NULL), window[j].timing) > WAITLIMIT){
+					window[j].resend = 1;
+				}
+			}
+		}
+
+		if(finished == 1){
+			printf("Sent last packet, looking for packets waiting for a response\n");
+			for(int j = 0; j < WINDOWSIZE; j++){
+				if(window[j].armed == 1){
+					printf("%d is still waiting for a response\n", window[j].seqNum);
+					remainingPackets = 1;
+					break;
+				}
+			}
+		}
+		if(finished == 1 && remainingPackets == 0){
+			printf("All packets accounted for, exiting\n");
+			break;
+		}
+
+		/* now receive an acknowledgemen from the server */
 		recvlen = recvfrom(fd, ackBuf, BUFLEN, 0, (struct sockaddr *)&remaddr, &slen);
-                if (recvlen >= 0) {
-                        ackBuf[recvlen] = 0;	/* expect a printable string - terminate it */
-                        printf("received message: \"%s\"\n", ackBuf);
-                }
-        
-        memset(ackBuf, 0, BUFLEN);
-        i++;
-	
-    }
+		if (recvlen >= 0) {
+			ackBuf[recvlen] = 0;	/* expect a printable string - terminate it */
+			printf("received message: \"%s\"\n", ackBuf);
+			uint32_t ackSeqNum;
+			sscanf(ackBuf, "%u", &ackSeqNum);
+			
+			for(int j = 0; j < WINDOWSIZE; j++){
+				if(window[j].seqNum == ackSeqNum){
+					window[j].seqNum = -1;
+					window[j].armed = 0;
+					window[j].resend = 0;
+				}
+			}
+		}
+		
+		memset(ackBuf, 0, BUFLEN);
+		i++;
+	}
 
 	close(fd);
-    fclose(fp);
+    	fclose(fp);
 	return 0;
 }
