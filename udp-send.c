@@ -18,11 +18,12 @@
 
 #define BUFLEN 512
 #define DEBUG 1
-#define DATASIZE 511
+#define DATASIZE 508
+#define SEQNUMSIZE 4
 int main(void)
 {
 	struct sockaddr_in myaddr, remaddr;
-	int fd, i, slen=sizeof(remaddr);
+	int fd, slen=sizeof(remaddr);
 	char buf[BUFLEN], ackBuf[BUFLEN];	/* message buffer */
 	int recvlen;		/* # bytes in acknowledgement message */
 	char *server = "127.0.0.1";	/* change this to use a different server */
@@ -79,20 +80,26 @@ int main(void)
         exit(1);
     }
 
+    printf("fileName: %s\n", buf);
     /* transmit file data */
-    i = 1;
+    unsigned int i = 1;
     // integer argument for reading length n-1
     while(1){
         memset(buf, 0, BUFLEN);
         int nRead = fread(buf, 1, DATASIZE, fp);
         printf("number of bytes read: %d\n", nRead);
-        buf[nRead] = i;
-        printf("transmitting number of bytes: %d\n", nRead+1);
+        
+        uint32_t networkByteI = htonl(i);
+
+        //append 4 byte seqNum to the end of buf
+        memcpy(buf+nRead, &networkByteI, SEQNUMSIZE);
+        
+        printf("transmitting number of bytes: %d\n", nRead+SEQNUMSIZE);
 //        printf("sending: %s\n", buf);
         //break when eof
         //transmit one last empty packet
 	    if(nRead <= 0){
-            if (sendto(fd, buf, nRead+1, 0, (struct sockaddr *)&remaddr, slen)==-1) {
+            if (sendto(fd, buf, nRead+SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, slen)==-1) {
 	            perror("sendto");
 		        exit(1);
 	        }
@@ -102,7 +109,7 @@ int main(void)
         /* append sequence number to end of message */
 //        buf[strlen(buf)] = i + '0';
 	
-        if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
+        if (sendto(fd, buf, nRead+SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, slen)==-1) {
 			perror("sendto");
 			exit(1);
 		}

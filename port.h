@@ -5,5 +5,5 @@
  * digits of your id + 1024
  */
 
-#define SERVICE_PORT	21231	/* hard-coded port number */
+#define SERVICE_PORT	21233	/* hard-coded port number */
 
