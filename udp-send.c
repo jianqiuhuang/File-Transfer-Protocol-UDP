@@ -15,6 +15,9 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "port.h"
 
 #define BUFLEN 512
@@ -23,6 +26,9 @@
 #define SEQNUMSIZE 4
 #define WINDOWSIZE 4
 #define WAITLIMIT 2
+
+
+int inet_aton(const char *cp, struct in_addr *inp);
 
 struct sentFrame{
 	uint32_t seqNum;

@@ -13,12 +13,16 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include "port.h"
 
 #define BUFSIZE 512
 #define DEBUG 1
 #define DATASIZE 508
 #define SEQNUMSIZE 4
+
+int close(int fildes);	
+
 int
 main(int argc, char **argv)
 {

@@ -1,5 +1,5 @@
 CC=gcc -std=c99
-CFLAGS = -g 
+CFLAGS = -g
 # uncomment this for SunOS
 # LIBS = -lsocket -lnsl 
 
