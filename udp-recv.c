@@ -131,7 +131,7 @@ main(int argc, char **argv)
                 /* sending ack to sender */
                 memset(ackBuf, 0, BUFSIZE);
                 uint32_t networkBytes = htonl(seqNum);
-                memcpy(ackBuf, &seqNum, SEQNUMSIZE);
+                memcpy(ackBuf, &networkBytes, SEQNUMSIZE);
                 printf("sending response \"%d\"\n", seqNum);
                 if (sendto(fd, ackBuf, SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, addrlen) < 0)
                 perror("sendto");
@@ -170,7 +170,7 @@ main(int argc, char **argv)
         else if(seqNum <= LFR){
             memset(ackBuf, 0, BUFSIZE);
             uint32_t networkBytes = htonl(seqNum);
-            memcpy(ackBuf, &seqNum, SEQNUMSIZE);
+            memcpy(ackBuf, &networkBytes, SEQNUMSIZE);
             printf("sending response \"%d\"\n", seqNum);
             if (sendto(fd, ackBuf, SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, addrlen) < 0)
                 perror("sendto"); 
