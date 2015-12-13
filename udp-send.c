@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 	/* now let's send the messages */
 
 	/* first send the file name */
-	sprintf(buf, argv[2]);
+	sprintf(buf, "%s", argv[2]);
 	if(sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
 		perror("sendto");
 		exit(1);
@@ -207,9 +207,9 @@ int main(int argc, char **argv)
 		if (recvlen >= 0) {
 			ackBuf[recvlen] = 0;	/* expect a printable string - terminate it */
 			printf("received message: \"%s\"\n", ackBuf);
-			uint32_t ackSeqNum;
-			sscanf(ackBuf, "%u", &ackSeqNum);
-			
+			uint32_t networkByteI = 0;
+			memcpy(&networkByteI, ackBuf, SEQNUMSIZE);
+			uint32_t ackSeqNum = ntohl(networkByteI);
 			for(int j = 0; j < WINDOWSIZE; j++){
 				if(window[j].seqNum == ackSeqNum){
 					window[j].seqNum = -1;
