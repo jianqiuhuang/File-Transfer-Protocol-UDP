@@ -205,11 +205,16 @@ int main(int argc, char **argv)
 		/* now receive an acknowledgemen from the server */
 		recvlen = recvfrom(fd, ackBuf, BUFLEN, 0, (struct sockaddr *)&remaddr, &slen);
 		if (recvlen >= 0) {
-			ackBuf[recvlen] = 0;	/* expect a printable string - terminate it */
 			printf("received message: \"%s\"\n", ackBuf);
-			uint32_t networkByteI = 0;
-			memcpy(&networkByteI, ackBuf, SEQNUMSIZE);
-			uint32_t ackSeqNum = ntohl(networkByteI);
+		//	unsigned int networkByteI = 0;
+		//	printf("before memcpy\n");
+		//	memcpy(&networkByteI, ackBuf, SEQNUMSIZE);
+		//	printf("after memcpy\n");
+		//	unsigned int ackSeqNum = ntohl(networkByteI);
+		//	printf("after ntohl %u\n", ackSeqNum);
+			unsigned int ackSeqNum = 0;
+			sscanf(ackBuf, "%u", &ackSeqNum);
+			printf("converted to %u\n" , ackSeqNum);
 			for(int j = 0; j < WINDOWSIZE; j++){
 				if(window[j].seqNum == ackSeqNum){
 					window[j].seqNum = -1;
