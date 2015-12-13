@@ -24,7 +24,7 @@
 #define DEBUG 1
 #define DATASIZE 508
 #define SEQNUMSIZE 4
-#define WINDOWSIZE 4
+#define WINDOWSIZE 16
 #define WAITLIMIT 2
 
 
@@ -38,13 +38,18 @@ struct sentFrame{
 	time_t timing;
 };
 
-int main(void)
+int main(int argc, char **argv)
 {
-	struct sockaddr_in myaddr, remaddr;
+    if(argc != 4){
+        perror("usage: ./upd-send <file-path> <file-name> <server-ip>");
+        exit(1);
+    }
+
+    struct sockaddr_in myaddr, remaddr;
 	int fd, slen=sizeof(remaddr);
 	char buf[BUFLEN], ackBuf[BUFLEN];	/* message buffer */
 	int recvlen;		/* # bytes in acknowledgement message */
-	char *server = "127.0.0.1";	/* change this to use a different server */
+	char *server = argv[3];	/* change this to use a different server */
 	
 	//initialize the window structure
 	struct sentFrame window[WINDOWSIZE];
@@ -83,23 +88,21 @@ int main(void)
 	}
 
 	/* open the file */
+    char fileCompleteName[100];
+    strcpy(fileCompleteName, argv[1]);
+    strcat(fileCompleteName, argv[2]);
+
 	FILE *fp;
-	fp = fopen("tmp/in.txt", "rb");
+	fp = fopen(fileCompleteName, "rb");
 	if(fp == NULL){
 		perror("fopen");
 		exit(1);
 	}
 
-	/*
-	   fseek(fp, 0L, SEEK_END);
-	   unsigned long long fileSize  = ftell(fp);
-	   fseek(fp, 0L, SEEK_SET);
-	   if(DEBUG) printf("File size: %d\n", fileSize);
-	   */
 	/* now let's send the messages */
 
 	/* first send the file name */
-	sprintf(buf, "in.txt");
+	sprintf(buf, argv[2]);
 	if(sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
 		perror("sendto");
 		exit(1);

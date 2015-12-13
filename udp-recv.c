@@ -26,6 +26,10 @@ int close(int fildes);
 int
 main(int argc, char **argv)
 {
+    if(argc != 2){
+        perror("usage: ./upd-rec <file-path>");
+        exit(1);
+    }
 	struct sockaddr_in myaddr;	/* our address */
 	struct sockaddr_in remaddr;	/* remote address */
 	socklen_t addrlen = sizeof(remaddr);		/* length of addresses */
@@ -60,19 +64,15 @@ main(int argc, char **argv)
     printf("receiving file name\n");
     /* receive file name and file size */
     char fileName[100];
+    strcpy(fileName, argv[1]);
     recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
     if (recvlen > 0){
         buf[recvlen] = 0;
-        strncpy(fileName, buf, strlen(buf));
+        strcat(fileName, buf);
     }else{
         perror("file name is not received");
     }
     printf("file name received\n");
-    /* check if fileName have been set */
-    if(fileName == NULL){
-        perror("Did not receive file name");
-        return 0;
-    }
 
     /* create file stream and allocate temporary data storage array */
     FILE *fp;
@@ -84,7 +84,7 @@ main(int argc, char **argv)
     printf("file created: %s\n", fileName);
 
 	/* now loop, receiving data and printing what we received */
-    const int WS = 4;
+    const int WS = 16;
     int LFR = 0, LFA = WS;
     unsigned int seqNum = 0;
     int window[WS];
