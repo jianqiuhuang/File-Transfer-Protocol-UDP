@@ -206,12 +206,6 @@ int main(int argc, char **argv)
 		recvlen = recvfrom(fd, ackBuf, BUFLEN, 0, (struct sockaddr *)&remaddr, &slen);
 		if (recvlen >= 0) {
 			printf("received message: \"%s\"\n", ackBuf);
-		//	unsigned int networkByteI = 0;
-		//	printf("before memcpy\n");
-		//	memcpy(&networkByteI, ackBuf, SEQNUMSIZE);
-		//	printf("after memcpy\n");
-		//	unsigned int ackSeqNum = ntohl(networkByteI);
-		//	printf("after ntohl %u\n", ackSeqNum);
 			unsigned int ackSeqNum = 0;
 			sscanf(ackBuf, "%u", &ackSeqNum);
 			printf("converted to %u\n" , ackSeqNum);

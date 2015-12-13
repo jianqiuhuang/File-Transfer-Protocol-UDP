@@ -151,7 +151,6 @@ main(int argc, char **argv)
                         break;
                 }     
                 LFA = LFR + WS;
-                printf("LFA: %d;; LFR: %d\n", LFA, LFR);
                 /* Get byte position in output file for write */
                 fseek(fp, (seqNum-1)*DATASIZE, SEEK_SET);
                 /* Right to the specified location */
@@ -181,9 +180,9 @@ main(int argc, char **argv)
             
         }
 	        /* print to check what is in window */
-            for(int i = 0; i < WS; ++i){
-                printf("window[%d] = %d\n", i, window[i]);
-            }
+         //   for(int i = 0; i < WS; ++i){
+         //      printf("window[%d] = %d\n", i, window[i]);
+         //   }
     }
     fclose(fp);
     close(fd);
