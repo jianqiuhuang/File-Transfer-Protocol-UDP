@@ -128,13 +128,13 @@ main(int argc, char **argv)
             
             /* packet previous received;; resend acknowledgement */
             if(window[index] == seqNum){
-                /* sending ack to sender */    
+                /* sending ack to sender */
                 memset(ackBuf, 0, BUFSIZE);
-	    	    sprintf(ackBuf, "ack %d", seqNum);
-	    	    printf("Resending response \"%s\"\n", ackBuf);
-    		    if (sendto(fd, ackBuf, strlen(ackBuf), 0, (struct sockaddr *)&remaddr, addrlen) < 0)
-		    	    perror("sendto");
-
+                uint32_t networkBytes = htonl(seqNum);
+                memcpy(ackBuf, &seqNum, SEQNUMSIZE);
+                printf("sending response \"%d\"\n", seqNum);
+                if (sendto(fd, ackBuf, SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, addrlen) < 0)
+                perror("sendto");
             }
             /* new packet within windown range;; update windown array and variables */
             else{
@@ -169,10 +169,11 @@ main(int argc, char **argv)
         /* resend packet acknowlegement because seqNum <= LFR */
         else if(seqNum <= LFR){
             memset(ackBuf, 0, BUFSIZE);
-		    sprintf(ackBuf, "ack %d", seqNum);
-		    printf("Resending response \"%s\"\n", ackBuf);
-		    if (sendto(fd, ackBuf, strlen(ackBuf), 0, (struct sockaddr *)&remaddr, addrlen) < 0)
-			    perror("sendto");
+            uint32_t networkBytes = htonl(seqNum);
+            memcpy(ackBuf, &seqNum, SEQNUMSIZE);
+            printf("sending response \"%d\"\n", seqNum);
+            if (sendto(fd, ackBuf, SEQNUMSIZE, 0, (struct sockaddr *)&remaddr, addrlen) < 0)
+                perror("sendto"); 
         }
         
         /* discard the packet */
