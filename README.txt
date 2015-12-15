@@ -14,10 +14,12 @@ TO RUN:
 
 ACKNOWLEDGEMENT:
 
-    During the coding process, we drew much of the implementation for the socket setup and sending from  Paul Krzyzanowski (Rutger University) at https://www.cs.rutgers.edu/~pxk/417/notes/sockets/files/demo-udp-04.zip for help with setting up UDP sockets.
+    During the coding process, we drew much of the implementation for the socket setup and sending in UDP from  Paul Krzyzanowski (Rutger University) at https://www.cs.rutgers.edu/~pxk/417/notes/sockets/files/demo-udp-04.zip.
 
 PACKET FORMAT:
 ----------------------------------------------------------------------------------------------------
 | 508 Bytes for the data potion | 4 bytes for an unsigned integer representing the sequence number|
 ----------------------------------------------------------------------------------------------------
 We chose a window size of 16. 
+
+Both server and client must agree to the same packet format.
